@@ -1,0 +1,38 @@
+[
+  {
+    "hidden_family": "DoS",
+    "test_flows": 38751,
+    "xgboost_detects": 0.0635080385022322,
+    "iforest_detects": 0.5718045985910041
+  },
+  {
+    "hidden_family": "DDoS",
+    "test_flows": 25603,
+    "xgboost_detects": 0.00011717376869898059,
+    "iforest_detects": 0.11842362223176972
+  },
+  {
+    "hidden_family": "PortScan",
+    "test_flows": 18139,
+    "xgboost_detects": 0.002425712553062462,
+    "iforest_detects": 0.0
+  },
+  {
+    "hidden_family": "BruteForce",
+    "test_flows": 1831,
+    "xgboost_detects": 0.0005461496450027307,
+    "iforest_detects": 0.0
+  },
+  {
+    "hidden_family": "WebAttack",
+    "test_flows": 430,
+    "xgboost_detects": 0.7558139534883721,
+    "iforest_detects": 0.004651162790697674
+  },
+  {
+    "hidden_family": "Bot",
+    "test_flows": 390,
+    "xgboost_detects": 0.0,
+    "iforest_detects": 0.0
+  }
+]

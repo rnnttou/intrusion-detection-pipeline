@@ -1,0 +1,87 @@
+# Ports côté hôte décalés d'un cran (5434, 19093, 8001, 8502) pour pouvoir tourner
+# en même temps que le projet fraud-detection-pipeline.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ids
+      POSTGRES_PASSWORD: ids
+      POSTGRES_DB: ids
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ids"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redpanda:
+    image: redpandadata/redpanda:v24.2.7
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19093
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19093
+    ports:
+      - "19093:19093"
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy:.*true'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: .
+    command: uvicorn src.api:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://ids:ids@postgres:5432/ids
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  consumer:
+    build: .
+    command: python -m src.consumer
+    environment:
+      DATABASE_URL: postgresql://ids:ids@postgres:5432/ids
+      KAFKA_BOOTSTRAP: redpanda:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    restart: on-failure
+
+  dashboard:
+    build: .
+    command: streamlit run src/dashboard.py --server.address 0.0.0.0
+    environment:
+      DATABASE_URL: postgresql://ids:ids@postgres:5432/ids
+    ports:
+      - "8502:8501"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Rejoue le jeu de test. Ne démarre pas avec "up" :
+  #   docker compose run --rm producer --rate 500 --limit 20000
+  producer:
+    build: .
+    entrypoint: ["python", "-m", "src.producer"]
+    profiles: ["replay"]
+    environment:
+      KAFKA_BOOTSTRAP: redpanda:9092
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+volumes:
+  pgdata:
