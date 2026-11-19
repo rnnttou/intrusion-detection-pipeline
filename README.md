@@ -1,5 +1,7 @@
 # Détection d'intrusions réseau en temps réel
 
+[![CI](https://github.com/rnnttou/intrusion-detection-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/rnnttou/intrusion-detection-pipeline/actions/workflows/ci.yml)
+
 Pipeline complet de détection d'intrusions, sur le modèle d'un IDS de SOC : chaque flux réseau est
 noté par deux détecteurs, les alertes sont publiées avec leur technique MITRE ATT&CK, tout est
 enregistré dans PostgreSQL et suivi dans un dashboard.
